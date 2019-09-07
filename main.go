@@ -78,6 +78,53 @@ func main() {
 				return nil
 			},
 		},
+		{
+			Name:     "copy",
+			Category: "General",
+			Usage:    "copy a file or directory",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:     "src, s",
+					Usage:    "source `file`",
+					Required: true,
+				},
+				cli.StringFlag{
+					Name:     "dst, d",
+					Usage:    "destination `file`",
+					Required: true,
+				},
+				cli.BoolFlag{
+					Name:  "recursive, r",
+					Usage: "Recursive copy",
+				},
+				cli.BoolFlag{
+					Name:  "createDir, c",
+					Usage: "Create dst directory if it doesn't exist",
+				},
+				cli.BoolFlag{
+					Name:  "verbose, v",
+					Usage: "Verbose output",
+				},
+				cli.BoolFlag{
+					Name:  "pbar, pb",
+					Usage: "Whether show progress bar, if true, it will calculate the size of directory, it can only be used with no verbose flag",
+				},
+			},
+			Action: func(c *cli.Context) error {
+				Options := tools.CopyOptions{
+					Src:         c.String("src"),
+					Dst:         c.String("dst"),
+					IsDir:       c.Bool("recursive"),
+					CreateDir:   c.Bool("createDir"),
+					Verbose:     c.Bool("verbose"),
+					ProgressBar: c.Bool("pbar"),
+				}
+				if err := tools.Copy(&Options); err != nil {
+					return cli.NewExitError(fmt.Errorf("Error Copy: %s", err), -1)
+				}
+				return nil
+			},
+		},
 	}
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))
