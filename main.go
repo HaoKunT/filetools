@@ -57,6 +57,27 @@ func main() {
 				return nil
 			},
 		},
+		{
+			Name:     "info",
+			Category: "General",
+			Usage:    "Show file information",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:     "file, f",
+					Usage:    "the `filename`",
+					Required: true,
+				},
+			},
+			Action: func(c *cli.Context) error {
+				Options := tools.InfoOptions{
+					FileName: c.String("file"),
+				}
+				if err := tools.Info(&Options); err != nil {
+					return cli.NewExitError(fmt.Errorf("Error Info: %s", err), -1)
+				}
+				return nil
+			},
+		},
 	}
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))

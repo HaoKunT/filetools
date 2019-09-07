@@ -59,8 +59,11 @@ func generateIndex(root string) {
 			srcDirNum++
 			return nil
 		}
+		rpath, _ := filepath.Rel(root, path)
 		srcFileNum++
 		srcSize += info.Size()
+
+		srcIndex[rpath] = info
 
 		return nil
 	})
