@@ -24,6 +24,7 @@ type CopyOptions struct {
 var copyOptions *CopyOptions
 var pgbSize *pb.ProgressBar
 var pgbNum *pb.ProgressBar
+var pgbPool *pb.Pool
 var dirCopy bool
 
 func Copy(options *CopyOptions) error {
@@ -49,7 +50,7 @@ func Copy(options *CopyOptions) error {
 		if !dstInfo.IsDir() {
 			return fmt.Errorf("Destination %s is not a directory", options.Dst)
 		}
-		srcAbs, err := filepath.Abs(info.Name())
+		srcAbs, err := filepath.Abs(options.Src)
 		if err != nil {
 			return err
 		}
@@ -139,8 +140,11 @@ func copyDir(srcDir, dstDir string) (int64, error) {
 		pgbNum.ShowSpeed = true
 		pgbNum.ShowCounters = true
 		pgbNum.ShowTimeLeft = true
-		pgbSize.Start()
-		pgbNum.Start()
+
+		pgbPool, err = pb.StartPool(pgbSize, pgbNum)
+		if err != nil {
+			return 0, err
+		}
 	}
 	err := filepath.Walk(srcDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -176,6 +180,7 @@ func copyDir(srcDir, dstDir string) (int64, error) {
 	if copyOptions.ProgressBar {
 		pgbSize.Finish()
 		pgbNum.Finish()
+		pgbPool.Stop()
 	}
 	return allsize, nil
 }

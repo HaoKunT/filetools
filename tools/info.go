@@ -28,7 +28,7 @@ func Info(options *InfoOptions) error {
 		return err
 	}
 
-	absName, err := filepath.Abs(info.Name())
+	absName, err := filepath.Abs(options.FileName)
 	if err != nil {
 		return err
 	}
