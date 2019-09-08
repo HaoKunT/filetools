@@ -67,10 +67,15 @@ func main() {
 					Usage:    "the `filename`",
 					Required: true,
 				},
+				cli.BoolFlag{
+					Name:  "crypto, c",
+					Usage: "use crypto to calculate the md5, sha1 and, sha256, this flag only works when the file is not directory",
+				},
 			},
 			Action: func(c *cli.Context) error {
 				Options := tools.InfoOptions{
 					FileName: c.String("file"),
+					Crypto:   c.Bool("crypto"),
 				}
 				if err := tools.Info(&Options); err != nil {
 					return cli.NewExitError(fmt.Errorf("Error Info: %s", err), -1)
