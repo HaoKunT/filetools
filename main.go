@@ -130,6 +130,38 @@ func main() {
 				return nil
 			},
 		},
+		{
+			Name:     "rename",
+			Category: "General",
+			Usage:    "Rename a file",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:     "src, s",
+					Usage:    "source `file`",
+					Required: true,
+				},
+				cli.StringFlag{
+					Name:     "dst, d",
+					Usage:    "destination `file`",
+					Required: true,
+				},
+				cli.BoolFlag{
+					Name:  "keep-original, k",
+					Usage: "keep original file",
+				},
+			},
+			Action: func(c *cli.Context) error {
+				Options := tools.RenameOptions{
+					Src:          c.String("src"),
+					Dst:          c.String("dst"),
+					KeepOriginal: c.Bool("keep-original"),
+				}
+				if err := tools.Rename(&Options); err != nil {
+					return cli.NewExitError(fmt.Errorf("Error Rename: %s", err), -1)
+				}
+				return nil
+			},
+		},
 	}
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))

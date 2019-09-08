@@ -107,7 +107,7 @@ func calculateDir(root string) error {
 		return err
 	}
 	fmt.Printf("Include: %d files, %d directories\n", srcFileNum, srcDirNum)
-	fmt.Printf("All Size: %s\n", transSize(srcSize))
+	fmt.Printf("All Size: %s (%d bytes)\n", transSize(srcSize), srcSize)
 	return nil
 }
 

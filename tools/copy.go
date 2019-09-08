@@ -79,7 +79,20 @@ func Copy(options *CopyOptions) error {
 		}
 		fmt.Printf("Copy %s to %s, Size: %s(%d bytes)\n", options.Src, options.Dst, transSize(n), n)
 	} else {
-		n, err := copyFile(options.Src, options.Dst)
+		srcName := filepath.Base(options.Src)
+		dstName := filepath.Join(options.Dst, srcName)
+		srcAbs, err := filepath.Abs(srcName)
+		if err != nil {
+			return err
+		}
+		dstAbs, err := filepath.Abs(dstName)
+		if err != nil {
+			return err
+		}
+		if dstAbs == srcAbs {
+			return fmt.Errorf("Source and destination are the same file")
+		}
+		n, err := copyFile(srcAbs, dstAbs)
 		if err != nil {
 			return err
 		}
