@@ -166,6 +166,42 @@ func main() {
 				return nil
 			},
 		},
+		{
+			Name:     "list",
+			Category: gettext.Gettext("General"),
+			Usage:    gettext.Gettext("list all files in a directory"),
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:     "directory, d",
+					Usage:    gettext.Gettext("the directory `path`"),
+					Required: true,
+				},
+				cli.StringSliceFlag{
+					Name: "sortby, s",
+					Usage: gettext.Gettext("sort the files by some fields, now supported: name, size, " +
+						"you can use it like this, --sortby name:desc --sortby size:asc, " +
+						"desc means descending, asc means ascending, desc and asc can be write in short name 'a' and 'd'." +
+						"the sort field appears first will be the main field, and so on. " +
+						"if sort, the command will calculate first, so the performance will be slower."),
+				},
+				cli.IntFlag{
+					Name:  "limit, l",
+					Usage: gettext.Gettext("limit the `number` of files to show"),
+					Value: tools.INT_MAX,
+				},
+			},
+			Action: func(c *cli.Context) error {
+				Options := tools.ListOptions{
+					Path:   c.String("directory"),
+					SortBy: c.StringSlice("sortby"),
+					Limit:  c.Int("limit"),
+				}
+				if err := tools.List(&Options); err != nil {
+					return cli.NewExitError(fmt.Errorf("Error List: %s", err), -1)
+				}
+				return nil
+			},
+		},
 	}
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))
