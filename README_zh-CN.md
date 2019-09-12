@@ -1,4 +1,6 @@
 [English](https://github.com/HaoKunT/filetools/blob/master/README.md)|[中文](https://github.com/HaoKunT/filetools/blob/master/README_zh-CN.md)
+
+[博客文章地址](https://hkvision.cn/2019/09/12/filetools工具/)
 # filetools
 一些关于文件的小工具集合
 
