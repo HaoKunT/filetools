@@ -6,6 +6,7 @@ require (
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1
 	github.com/fatih/color v1.7.0 // indirect
+	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
 	github.com/h2non/filetype v1.0.10
 	github.com/kr/pretty v0.1.0 // indirect

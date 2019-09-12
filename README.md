@@ -1,5 +1,8 @@
 [English](https://github.com/HaoKunT/filetools/blob/master/README.md)|[中文](https://github.com/HaoKunT/filetools/blob/master/README_zh-CN.md)
-# filetools
+# filetools 
+--------------------------------
+[![Build Status](https://travis-ci.org/HaoKunT/filetools.svg?branch=master)](https://travis-ci.org/HaoKunT/filetools)
+
 some tools of file
 
 ## Why

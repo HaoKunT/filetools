@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+*.mo
 
 # Test binary, build with `go test -c`
 *.test
@@ -13,6 +14,3 @@
 
 # Release
 release/
-
-# local
-local/

@@ -2,6 +2,9 @@
 
 [博客文章地址](https://hkvision.cn/2019/09/12/filetools工具/)
 # filetools
+--------------------------------
+[![Build Status](https://travis-ci.org/HaoKunT/filetools.svg?branch=master)](https://travis-ci.org/HaoKunT/filetools)
+
 一些关于文件的小工具集合
 
 ## 为什么写这个工具
