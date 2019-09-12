@@ -122,6 +122,9 @@ func List(options *ListOptions) error {
 		if fileNum != len(listIndex) {
 			return fmt.Errorf("There is a error that the fileNum is wrong")
 		}
+		if fileNum < listOptions.Limit {
+			listOptions.Limit = fileNum
+		}
 		sort.Sort(listIndex)
 		for _, oS := range listIndex[:listOptions.Limit] {
 			fmt.Printf("%s  %s  %10s  %s\n", oS.Mode(), oS.ModTime().Format("2006-01-02 15:04:05"), transSize(oS.Size()), oS.RelativePath)
