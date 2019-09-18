@@ -1,3 +1,5 @@
+#!/bin/bash
+
 for pofile in `find ./local -name *.po`
 do
     mofile=`echo "$pofile" | sed 's/\.po/.mo/g'`

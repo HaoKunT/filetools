@@ -47,7 +47,7 @@ func Rename(options *RenameOptions) error {
 		fmt.Printf("Rename File %s to %s, Size: %s (%d bytes)\n", options.Src, options.Dst, transSize(n), n)
 		return nil
 	}
-	err = os.Rename(options.Src, options.Dst)
+	err = move(options.Src, options.Dst)
 	if err != nil {
 		return err
 	}
