@@ -228,6 +228,33 @@ func main() {
 				return nil
 			},
 		},
+		{
+			Name:     "move",
+			Category: gettext.Gettext("General"),
+			Usage:    gettext.Gettext("move a file or directory, it works like `mv`"),
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:     "source, s",
+					Usage:    gettext.Gettext("source `file`"),
+					Required: true,
+				},
+				cli.StringFlag{
+					Name:     "destination, d",
+					Usage:    gettext.Gettext("destination `file`"),
+					Required: true,
+				},
+			},
+			Action: func(c *cli.Context) error {
+				options := tools.MoveOptions{
+					Src: c.String("source"),
+					Dst: c.String("destination"),
+				}
+				if err := tools.Move(&options); err != nil {
+					return cli.NewExitError(fmt.Errorf("Error Move: %s", err), -1)
+				}
+				return nil
+			},
+		},
 	}
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))

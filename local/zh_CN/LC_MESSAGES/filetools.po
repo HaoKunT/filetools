@@ -97,3 +97,6 @@ msgctxt "main.main"
 msgid "hard delete, it will delete the directory directly"
 msgstr "硬删除，将直接删除"
 
+msgctxt "main.main"
+msgid "move a file or directory, it works like `mv`"
+msgstr "移动文件或目录，和`mv`命令工作方式一样"
