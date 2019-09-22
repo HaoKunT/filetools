@@ -84,3 +84,19 @@ msgstr "限制显示的文件数量"
 msgctxt "main.main"
 msgid "the directory `path`"
 msgstr "目录的路径"
+
+msgctxt "main.main"
+msgid "delete a file or directory, it will move file to the ~/.filetools-trash default"
+msgstr "删除一个文件或目录，默认情况下会放至~/.filetools-trash目录下"
+
+msgctxt "main.main"
+msgid "the `file` or directory"
+msgstr "文件或目录"
+
+msgctxt "main.main"
+msgid "hard delete, it will delete the directory directly"
+msgstr "硬删除，将直接删除"
+
+msgctxt "main.main"
+msgid "move a file or directory, it works like `mv`"
+msgstr "移动文件或目录，和`mv`命令工作方式一样"

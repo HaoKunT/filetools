@@ -202,6 +202,59 @@ func main() {
 				return nil
 			},
 		},
+		{
+			Name:     "delete",
+			Category: gettext.Gettext("General"),
+			Usage:    gettext.Gettext("delete a file or directory, it will move file to the ~/.filetools-trash default"),
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:     "file, f",
+					Usage:    gettext.Gettext("the `file` or directory"),
+					Required: true,
+				},
+				cli.BoolFlag{
+					Name:  "hard, hd",
+					Usage: gettext.Gettext("hard delete, it will delete the directory directly"),
+				},
+			},
+			Action: func(c *cli.Context) error {
+				Options := tools.DeleteOptions{
+					Path:       c.String("file"),
+					HardDelete: c.Bool("hard"),
+				}
+				if err := tools.Delete(&Options); err != nil {
+					return cli.NewExitError(fmt.Errorf("Error Delete: %s", err), -1)
+				}
+				return nil
+			},
+		},
+		{
+			Name:     "move",
+			Category: gettext.Gettext("General"),
+			Usage:    gettext.Gettext("move a file or directory, it works like `mv`"),
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:     "source, s",
+					Usage:    gettext.Gettext("source `file`"),
+					Required: true,
+				},
+				cli.StringFlag{
+					Name:     "destination, d",
+					Usage:    gettext.Gettext("destination `file`"),
+					Required: true,
+				},
+			},
+			Action: func(c *cli.Context) error {
+				options := tools.MoveOptions{
+					Src: c.String("source"),
+					Dst: c.String("destination"),
+				}
+				if err := tools.Move(&options); err != nil {
+					return cli.NewExitError(fmt.Errorf("Error Move: %s", err), -1)
+				}
+				return nil
+			},
+		},
 	}
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))

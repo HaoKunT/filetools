@@ -81,7 +81,7 @@ func Copy(options *CopyOptions) error {
 	} else {
 		srcName := filepath.Base(options.Src)
 		dstName := filepath.Join(options.Dst, srcName)
-		srcAbs, err := filepath.Abs(srcName)
+		srcAbs, err := filepath.Abs(options.Src)
 		if err != nil {
 			return err
 		}

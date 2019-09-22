@@ -2,7 +2,6 @@ package tools
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 )
 
@@ -16,7 +15,7 @@ var renameOptions *RenameOptions
 
 func Rename(options *RenameOptions) error {
 	renameOptions = options
-	info, err := os.Stat(options.Src)
+	info, err := NewExtInfo(options.Src)
 	if err != nil {
 		return err
 	}
@@ -47,7 +46,7 @@ func Rename(options *RenameOptions) error {
 		fmt.Printf("Rename File %s to %s, Size: %s (%d bytes)\n", options.Src, options.Dst, transSize(n), n)
 		return nil
 	}
-	err = os.Rename(options.Src, options.Dst)
+	err = move(info, options.Dst)
 	if err != nil {
 		return err
 	}

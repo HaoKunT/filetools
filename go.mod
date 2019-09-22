@@ -18,6 +18,10 @@ require (
 	github.com/qianlnk/to v0.0.0-20180426070425-a52c7fda1751 // indirect
 	github.com/urfave/cli v1.21.0
 	golang.org/x/crypto v0.0.0-20190907121410-71b5226ff739 // indirect
+	golang.org/x/net v0.0.0-20190916140828-c8589233b77d // indirect
+	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
+	golang.org/x/sys v0.0.0-20190606165138-5da285871e9c
+	golang.org/x/tools v0.0.0-20190917162342-3b4f30a44f3b // indirect
 	google.golang.org/appengine v1.6.2 // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.28
 )

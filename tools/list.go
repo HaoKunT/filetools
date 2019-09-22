@@ -17,13 +17,6 @@ type ListOptions struct {
 
 type osSort []ExtFileInfo
 
-type ExtFileInfo struct {
-	os.FileInfo
-	AbsPath      string
-	RelativePath string
-	BasePath     string
-}
-
 type sortTagFunc func(a, b os.FileInfo) status
 
 var sortMapFuncs map[string]sortTagFunc
@@ -105,7 +98,13 @@ func List(options *ListOptions) error {
 				if err != nil {
 					return err
 				}
-				listIndex = append(listIndex, ExtFileInfo{info, absPath, path, pathName})
+				listIndex = append(listIndex, ExtFileInfo{
+					FileInfo:     info,
+					AbsPath:      absPath,
+					RelativePath: path,
+					// BasePath:     path,
+				},
+				)
 			}
 			fileNum++
 		}
