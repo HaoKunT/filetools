@@ -13,11 +13,11 @@ type ExtFileInfo struct {
 	AbsPath      string
 	RootPath     string
 	RelativePath string
-	// BasePath     string
-	RealSize int64
-	DirNum   int
-	FileNum  int
-	Children []*ExtFileInfo
+	BasePath     string
+	RealSize     int64
+	DirNum       int
+	FileNum      int
+	Children     []*ExtFileInfo
 }
 
 // NewExtInfo build file tree, the path is root path
@@ -36,6 +36,7 @@ func NewExtInfo(path string) (*ExtFileInfo, error) {
 	exinfo.RootPath = absPath
 	exinfo.AbsPath = absPath
 	exinfo.RelativePath = "."
+	exinfo.BasePath = filepath.Base(absPath)
 	if !exinfo.IsDir() {
 		exinfo.RealSize = exinfo.Size()
 		exinfo.DirNum = 0
@@ -47,7 +48,7 @@ func NewExtInfo(path string) (*ExtFileInfo, error) {
 	errs := make(chan error)
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go buildTree(&exinfo, errs, &wg)
+	go buildTree(&exinfo, errs, &wg, nil)
 	var isError bool
 	var errsList []error
 	go func() {
@@ -65,18 +66,23 @@ func NewExtInfo(path string) (*ExtFileInfo, error) {
 }
 
 // build the file tree
-func buildTree(extinfo *ExtFileInfo, errs chan<- error, wg *sync.WaitGroup) {
+// the errs will transform the error to root, wg also wait the build, parentSync is wait for the dir to calculate the size
+func buildTree(extinfo *ExtFileInfo, errs chan<- error, wg *sync.WaitGroup, parentSync chan<- int64) {
 	defer wg.Done()
 	filelist, err := ioutil.ReadDir(extinfo.AbsPath)
 	if err != nil {
 		errs <- err
 	}
+	var localwg sync.WaitGroup
+	childSync := make(chan int64, 10)
+	var cdirsize int64
 	for _, file := range filelist {
 		var cextinfo ExtFileInfo
 		cextinfo.FileInfo = file
 		cextinfo.AbsPath = filepath.Join(extinfo.AbsPath, file.Name())
 		cextinfo.RootPath = extinfo.RootPath
 		cextinfo.RelativePath = filepath.Join(extinfo.RelativePath, file.Name())
+		cextinfo.BasePath = filepath.Base(cextinfo.AbsPath)
 		extinfo.Children = append(extinfo.Children, &cextinfo)
 		if !cextinfo.IsDir() {
 			cextinfo.RealSize = extinfo.Size()
@@ -86,10 +92,23 @@ func buildTree(extinfo *ExtFileInfo, errs chan<- error, wg *sync.WaitGroup) {
 			extinfo.RealSize += cextinfo.Size()
 			extinfo.FileNum++
 		} else {
+			localwg.Add(1)
 			extinfo.DirNum++
 			wg.Add(1)
-			go buildTree(&cextinfo, errs, wg)
+			go buildTree(&cextinfo, errs, wg, childSync)
 		}
+	}
+	go func() {
+		localwg.Wait()
+		close(childSync)
+		extinfo.RealSize += cdirsize
+		if parentSync != nil {
+			parentSync <- extinfo.RealSize
+		}
+	}()
+	for syncs := range childSync {
+		cdirsize += syncs
+		localwg.Done()
 	}
 }
 
