@@ -12,7 +12,8 @@ fi
 # 	UPX=true
 # fi
 
-VERSION=$(curl -sSL https://api.github.com/repos/haokunt/filetools/commits/master | sed -n '{/sha/p; /date/p;}'| sed 's/.* \"//g' | cut -c1-10 | tr '[:lower:]' '[:upper:]' | sed 'N;s/\n/@/g' | head -1)
+# VERSION=$(curl -sSL https://api.github.com/repos/haokunt/filetools/commits/master | sed -n '{/sha/p; /date/p;}'| sed 's/.* \"//g' | cut -c1-10 | tr '[:lower:]' '[:upper:]' | sed 'N;s/\n/@/g' | head -1)
+VERSION=$(git rev-list HEAD --abbrev-commit --max-count=1 | tr '[:lower:]' '[:upper:]')@$(date +%Y-%m-%d)
 LDFLAGS="-X main.version=$VERSION -s -w -linkmode external -extldflags -static"
 GCFLAGS=""
 GOVERSION=`go version | awk '{print $3}'`
