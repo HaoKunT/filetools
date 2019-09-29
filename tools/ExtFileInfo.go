@@ -67,15 +67,14 @@ func NewExtInfo(path string) (*ExtFileInfo, error) {
 
 // build the file tree
 // the errs will transform the error to root, wg also wait the build, parentSync is wait for the dir to calculate the size
-func buildTree(extinfo *ExtFileInfo, errs chan<- error, wg *sync.WaitGroup, parentSync chan<- int64) {
+func buildTree(extinfo *ExtFileInfo, errs chan<- error, wg *sync.WaitGroup, parentSync chan<- *ExtFileInfo) {
 	defer wg.Done()
 	filelist, err := ioutil.ReadDir(extinfo.AbsPath)
 	if err != nil {
 		errs <- err
 	}
 	var localwg sync.WaitGroup
-	childSync := make(chan int64, 10)
-	var cdirsize int64
+	childSync := make(chan *ExtFileInfo, 10)
 	for _, file := range filelist {
 		var cextinfo ExtFileInfo
 		cextinfo.FileInfo = file
@@ -101,13 +100,14 @@ func buildTree(extinfo *ExtFileInfo, errs chan<- error, wg *sync.WaitGroup, pare
 	go func() {
 		localwg.Wait()
 		close(childSync)
-		extinfo.RealSize += cdirsize
 		if parentSync != nil {
-			parentSync <- extinfo.RealSize
+			parentSync <- extinfo
 		}
 	}()
 	for syncs := range childSync {
-		cdirsize += syncs
+		extinfo.RealSize += syncs.RealSize
+		extinfo.DirNum += syncs.DirNum
+		extinfo.FileNum += syncs.FileNum
 		localwg.Done()
 	}
 }
