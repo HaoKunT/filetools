@@ -23,27 +23,20 @@ var infoOptions *InfoOptions
 func Info(options *InfoOptions) error {
 	infoOptions = options
 
-	info, err := os.Stat(options.FileName)
-	if err != nil {
-		return err
-	}
-
-	absName, err := filepath.Abs(options.FileName)
+	info, err := NewExtInfo(infoOptions.FileName)
 	if err != nil {
 		return err
 	}
 
 	fmt.Println("General:")
 	fmt.Printf("Name: %s\n", info.Name())
-	fmt.Printf("Absolute path: %s\n", absName)
+	fmt.Printf("Absolute path: %s\n", info.AbsPath)
 
 	if info.IsDir() {
 		fmt.Printf("Type: directory\n")
-		if err := calculateDir(infoOptions.FileName); err != nil {
-			return err
-		}
+		fmt.Printf("%d directories, %d files, %s (%d bytes)\n", info.DirNum, info.FileNum, transSize(info.RealSize), info.RealSize)
 	} else {
-		kind, err := filetype.MatchFile(info.Name())
+		kind, err := filetype.MatchFile(info.AbsPath)
 		if err != nil {
 			return err
 		}
@@ -51,7 +44,7 @@ func Info(options *InfoOptions) error {
 		if kind != filetype.Unknown {
 			fmt.Printf("MIME-type: %s\n", kind.MIME.Value)
 		}
-		fmt.Printf("Size: %s (%d bytes)\n", transSize(info.Size()), info.Size())
+		fmt.Printf("Size: %s (%d bytes)\n", transSize(info.RealSize), info.RealSize)
 	}
 	fmt.Printf("Mode: %s\n", info.Mode())
 	fmt.Printf("ModTime: %s\n", info.ModTime())
@@ -62,21 +55,21 @@ func Info(options *InfoOptions) error {
 		fmt.Println()
 		fmt.Println("Crypto")
 		// md5
-		md5V, err := md5f(absName)
+		md5V, err := md5f(info.AbsPath)
 		if err != nil {
 			return err
 		}
 		fmt.Printf("MD5: %s\n", md5V)
 
 		// sha1
-		sha1V, err := sha1f(absName)
+		sha1V, err := sha1f(info.AbsPath)
 		if err != nil {
 			return err
 		}
 		fmt.Printf("SHA1: %s\n", sha1V)
 
 		// sha256
-		sha256V, err := sha256f(absName)
+		sha256V, err := sha256f(info.AbsPath)
 		if err != nil {
 			return err
 		}
