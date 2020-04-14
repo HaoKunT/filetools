@@ -17,9 +17,9 @@ const (
 	ascending
 	descending
 )
+const parNum = 10
 
-const INT_MAX = int(^uint(0) >> 1)
-
+var Concurrency chan struct{}
 var breakWalkError = errors.New("break walk")
 
 // Home returns the home directory for the executing user.

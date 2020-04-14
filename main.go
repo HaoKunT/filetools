@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"runtime"
 	"sort"
@@ -187,7 +188,7 @@ func main() {
 				cli.IntFlag{
 					Name:  "limit, l",
 					Usage: gettext.Gettext("limit the `number` of files to show"),
-					Value: tools.INT_MAX,
+					Value: math.MaxInt32,
 				},
 			},
 			Action: func(c *cli.Context) error {

@@ -3,9 +3,16 @@ package tools
 import (
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"sync"
+	"time"
+
+	"github.com/Re-volution/sizestruct"
+	"github.com/panjf2000/ants/v2"
 )
 
 type ExtFileInfo struct {
@@ -17,7 +24,9 @@ type ExtFileInfo struct {
 	RealSize     int64
 	DirNum       int
 	FileNum      int
+	Parent       *ExtFileInfo
 	Children     []*ExtFileInfo
+	lock         sync.RWMutex
 }
 
 // NewExtInfo build file tree, the path is root path
@@ -37,6 +46,7 @@ func NewExtInfo(path string) (*ExtFileInfo, error) {
 	exinfo.AbsPath = absPath
 	exinfo.RelativePath = "."
 	exinfo.BasePath = filepath.Base(absPath)
+	exinfo.Parent = nil
 	if !exinfo.IsDir() {
 		exinfo.RealSize = exinfo.Size()
 		exinfo.DirNum = 0
@@ -44,11 +54,31 @@ func NewExtInfo(path string) (*ExtFileInfo, error) {
 		exinfo.Children = nil
 		return &exinfo, nil
 	}
-	exinfo.DirNum = 1
+	p, err := ants.NewPool(math.MaxInt32, ants.WithExpiryDuration(1*time.Second), ants.WithNonblocking(true))
+	if err != nil {
+		return nil, err
+	}
+	defer p.Release()
 	errs := make(chan error)
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go buildTree(&exinfo, errs, &wg, nil)
+	err = p.Submit(func() {
+		buildTree(&exinfo, errs, &wg, p)
+		wg.Done()
+	})
+	if err != nil {
+		errs <- err
+	}
+	// go func() {
+	// 	timer := time.NewTimer(1 * time.Second)
+	// 	for {
+	// 		select {
+	// 		case <-timer.C:
+	// 			fmt.Printf("Cap: %d, Running: %d, Free: %d, wg: %v\n", p.Cap(), p.Running(), p.Free(), wg)
+	// 			timer.Reset(1 * time.Second)
+	// 		}
+	// 	}
+	// }()
 	var isError bool
 	var errsList []error
 	go func() {
@@ -60,21 +90,25 @@ func NewExtInfo(path string) (*ExtFileInfo, error) {
 		errsList = append(errsList, err)
 	}
 	if isError {
-		return nil, fmt.Errorf("NewExtInfo error: %v", errs)
+		return nil, fmt.Errorf("NewExtInfo error: %v", errsList)
 	}
+	p.Release()
 	return &exinfo, nil
 }
 
 // build the file tree
 // the errs will transform the error to root, wg also wait the build, parentSync is wait for the dir to calculate the size
-func buildTree(extinfo *ExtFileInfo, errs chan<- error, wg *sync.WaitGroup, parentSync chan<- *ExtFileInfo) {
-	defer wg.Done()
+func buildTree(extinfo *ExtFileInfo, errs chan<- error, wg *sync.WaitGroup, p *ants.Pool) {
+	// Concurrency <- struct{}{}
+	extinfo.lock.Lock()
+	defer func() {
+		extinfo.lock.Unlock()
+		// <-Concurrency
+	}()
 	filelist, err := ioutil.ReadDir(extinfo.AbsPath)
 	if err != nil {
 		errs <- err
 	}
-	var localwg sync.WaitGroup
-	childSync := make(chan *ExtFileInfo, 10)
 	for _, file := range filelist {
 		var cextinfo ExtFileInfo
 		cextinfo.FileInfo = file
@@ -83,6 +117,7 @@ func buildTree(extinfo *ExtFileInfo, errs chan<- error, wg *sync.WaitGroup, pare
 		cextinfo.RelativePath = filepath.Join(extinfo.RelativePath, file.Name())
 		cextinfo.BasePath = filepath.Base(cextinfo.AbsPath)
 		extinfo.Children = append(extinfo.Children, &cextinfo)
+		cextinfo.Parent = extinfo
 		if !cextinfo.IsDir() {
 			cextinfo.RealSize = extinfo.Size()
 			cextinfo.DirNum = 0
@@ -91,24 +126,32 @@ func buildTree(extinfo *ExtFileInfo, errs chan<- error, wg *sync.WaitGroup, pare
 			extinfo.RealSize += cextinfo.Size()
 			extinfo.FileNum++
 		} else {
-			localwg.Add(1)
 			extinfo.DirNum++
 			wg.Add(1)
-			go buildTree(&cextinfo, errs, wg, childSync)
+			err = p.Submit(func() {
+				buildTree(&cextinfo, errs, wg, p)
+				wg.Done()
+			})
+			if err != nil {
+				errs <- err
+			}
 		}
 	}
-	go func() {
-		localwg.Wait()
-		close(childSync)
-		if parentSync != nil {
-			parentSync <- extinfo
-		}
-	}()
-	for syncs := range childSync {
-		extinfo.RealSize += syncs.RealSize
-		extinfo.DirNum += syncs.DirNum
-		extinfo.FileNum += syncs.FileNum
-		localwg.Done()
+	if extinfo.Parent != nil {
+		extinfo.Parent.lock.Lock()
+		changeHandler(extinfo.Parent, extinfo)
+		extinfo.Parent.lock.Unlock()
+	}
+}
+
+func changeHandler(pinfo, info *ExtFileInfo) {
+	pinfo.RealSize += info.RealSize
+	pinfo.FileNum += info.FileNum
+	pinfo.DirNum += info.DirNum
+	if pinfo.Parent != nil {
+		pinfo.Parent.lock.Lock()
+		changeHandler(pinfo.Parent, info)
+		pinfo.Parent.lock.Unlock()
 	}
 }
 
@@ -144,4 +187,39 @@ func (extinfo *ExtFileInfo) Traversal() []*ExtFileInfo {
 		}
 	}
 	return infos
+}
+
+// TraversalChan means Traversal the directory (channel)
+// buf means the channel buffer size
+func (extinfo *ExtFileInfo) TraversalChan(buf int) <-chan *ExtFileInfo {
+	if buf < 0 {
+		buf = 0
+	}
+	ch := make(chan *ExtFileInfo, buf)
+	go traversalChan(extinfo, ch, true)
+	return ch
+}
+
+func traversalChan(extinfo *ExtFileInfo, ch chan<- *ExtFileInfo, isclose bool) {
+	for _, info := range extinfo.Children {
+		ch <- info
+		if info.IsDir() {
+			traversalChan(info, ch, false)
+		}
+	}
+	if isclose {
+		close(ch)
+	}
+}
+
+// RealSizeOfExtFileinfo returns the size of the struct
+func RealSizeOfExtFileinfo(extinfo *ExtFileInfo) int64 {
+	return int64(sizestruct.SizeOf(extinfo))
+}
+
+func filedeep(absPath string) int {
+	if runtime.GOOS == "windows" {
+		return len(strings.Split(absPath, "\\"))
+	}
+	return len(strings.Split(absPath, "/"))
 }

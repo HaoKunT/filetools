@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	pb "gopkg.in/cheggaaa/pb.v1"
@@ -30,14 +32,16 @@ var dirCopy bool
 func Copy(options *CopyOptions) error {
 	copyOptions = options
 
-	info, err := os.Stat(options.Src)
+	info, err := NewExtInfo(copyOptions.Src)
 	if err != nil {
 		return err
 	}
 
+	// first the directory judge
 	if info.IsDir() && !options.IsDir {
 		return errors.New("Source is a directory, please use -r flag")
 	}
+	// if the directoy
 	if info.IsDir() {
 		dirCopy = true
 		if copyOptions.Verbose && copyOptions.ProgressBar {
@@ -50,21 +54,16 @@ func Copy(options *CopyOptions) error {
 		if !dstInfo.IsDir() {
 			return fmt.Errorf("Destination %s is not a directory", options.Dst)
 		}
-		srcAbs, err := filepath.Abs(options.Src)
-		if err != nil {
-			return err
-		}
-		srcDirName := filepath.Base(srcAbs)
-		dstDir := filepath.Join(copyOptions.Dst, srcDirName)
+		dstDir := filepath.Join(copyOptions.Dst, info.BasePath)
 		dstAbs, err := filepath.Abs(dstDir)
 		if err != nil {
 			return err
 		}
-		if dstAbs == srcAbs {
+		if dstAbs == info.AbsPath {
 			return fmt.Errorf("Source and destination are the same")
 		}
 
-		if strings.HasPrefix(dstAbs, srcAbs) {
+		if strings.HasPrefix(dstAbs, info.AbsPath) {
 			return fmt.Errorf("%s is sub-directory of source %s", dstDir, info.Name())
 		}
 		if !IsExisted(dstAbs) && !copyOptions.CreateDir {
@@ -73,7 +72,9 @@ func Copy(options *CopyOptions) error {
 		if err := MakeDir(dstAbs, info.Mode()); err != nil {
 			return err
 		}
-		n, err := copyDir(srcAbs, dstAbs)
+		fmt.Printf("Include %d files, %d directories\n", info.FileNum, info.DirNum)
+		fmt.Printf("Size %s (%d bytes)\n", transSize(info.RealSize), info.RealSize)
+		n, err := copyDir(info, dstAbs)
 		if err != nil {
 			return err
 		}
@@ -138,15 +139,12 @@ func copyFile(src, dst string) (int64, error) {
 	return io.Copy(desFile, srcFile)
 }
 
-func copyDir(srcDir, dstDir string) (int64, error) {
+func copyDir(srcDir *ExtFileInfo, dstDir string) (int64, error) {
 	var allsize int64
+	var err error
 	if copyOptions.ProgressBar {
-		err := calculateDir(srcDir)
-		if err != nil {
-			return 0, err
-		}
-		pgbSize = pb.New64(srcSize).SetUnits(pb.U_BYTES).SetRefreshRate(time.Millisecond * 100)
-		pgbNum = pb.New(srcFileNum)
+		pgbSize = pb.New64(srcDir.RealSize).SetUnits(pb.U_BYTES).SetRefreshRate(time.Millisecond * 100)
+		pgbNum = pb.New(srcDir.FileNum)
 		pgbSize.ShowSpeed = true
 		pgbSize.ShowCounters = true
 		pgbSize.ShowTimeLeft = true
@@ -159,41 +157,91 @@ func copyDir(srcDir, dstDir string) (int64, error) {
 			return 0, err
 		}
 	}
-	err := filepath.Walk(srcDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
+	errC := make(chan error, 10)
+	var wg sync.WaitGroup
+	var errsList []error
+	go func() {
+		for err := range errC {
+			errsList = append(errsList, err)
 		}
-		if path == srcDir {
-			return nil
+	}()
+
+	for info := range srcDir.TraversalChan(20) {
+		if info.AbsPath == srcDir.AbsPath {
+			continue
 		}
-		dstNewPath := strings.Replace(path, srcDir, dstDir, -1)
+		dstNewPath := strings.Replace(info.AbsPath, srcDir.AbsPath, dstDir, -1)
 
 		if info.IsDir() {
 			if err := MakeDir(dstNewPath, info.Mode()); err != nil {
-				return err
+				errC <- err
 			}
 		} else {
-			n, err := copyFile(path, dstNewPath)
-			if err != nil {
-				return err
-			}
-			allsize += n
-			if copyOptions.Verbose {
-				fmt.Printf("%s -> %s : %s\n", path, dstNewPath, transSize(n))
-			}
-			if copyOptions.ProgressBar {
-				pgbNum.Increment()
-			}
+			wg.Add(1)
+			go func(i *ExtFileInfo, newPath string) {
+				Concurrency <- struct{}{}
+				defer func() {
+					wg.Done()
+					<-Concurrency
+				}()
+				n, err := copyFile(i.AbsPath, newPath)
+				if err != nil {
+					errC <- err
+				}
+				atomic.AddInt64(&allsize, n)
+				if copyOptions.Verbose {
+					fmt.Printf("%s -> %s : %s\n", i.AbsPath, newPath, transSize(n))
+				}
+				if copyOptions.ProgressBar {
+					pgbNum.Increment()
+				}
+			}(info, dstNewPath)
 		}
-		return nil
-	})
-	if err != nil {
-		return 0, err
 	}
+
+	// err = filepath.Walk(srcDir.AbsPath, func(path string, info os.FileInfo, err error) error {
+	// 	if err != nil {
+	// 		errC <- err
+	// 		return err
+	// 	}
+	// 	if path == srcDir.AbsPath {
+	// 		return nil
+	// 	}
+	// 	dstNewPath := strings.Replace(path, srcDir.AbsPath, dstDir, -1)
+
+	// 	if info.IsDir() {
+	// 		if err := MakeDir(dstNewPath, info.Mode()); err != nil {
+	// 			errC <- err
+	// 			return err
+	// 		}
+	// 	} else {
+	// 		wg.Add(1)
+	// 		go func() {
+	// 			defer wg.Done()
+	// 			n, err := copyFile(path, dstNewPath)
+	// 			if err != nil {
+	// 				errC <- err
+	// 			}
+	// 			allsize = atomic.AddInt64(&allsize, n)
+	// 			if copyOptions.Verbose {
+	// 				fmt.Printf("%s -> %s : %s\n", path, dstNewPath, transSize(n))
+	// 			}
+	// 			if copyOptions.ProgressBar {
+	// 				pgbNum.Increment()
+	// 			}
+	// 		}()
+	// 	}
+	// 	return nil
+	// })
+	wg.Wait()
+	close(errC)
 	if copyOptions.ProgressBar {
 		pgbSize.Finish()
 		pgbNum.Finish()
 		pgbPool.Stop()
+	}
+	if len(errsList) != 0 {
+		return 0, fmt.Errorf("copy dir error: %v", errsList)
 	}
 	return allsize, nil
 }
