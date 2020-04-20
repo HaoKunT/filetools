@@ -14,6 +14,7 @@ import (
 type ParWalker struct {
 	os.FileInfo
 	AbsPath string
+	RelPath string
 	Err     error // if the walker meets the error, it's error, nor it will be nil
 }
 
@@ -43,14 +44,17 @@ func ParWalk(path string, buf int) <-chan ParWalker {
 					walker <- ParWalker{
 						nil,
 						"",
+						"",
 						err,
 					}
 					return
 				}
-				absPath, err := filepath.Abs(subpath)
-				if err != nil {
+				absPath, err1 := filepath.Abs(subpath)
+				rpath, err2 := filepath.Rel(path, subpath)
+				if err1 != nil || err2 != nil {
 					walker <- ParWalker{
 						nil,
+						"",
 						"",
 						err,
 					}
@@ -59,6 +63,7 @@ func ParWalk(path string, buf int) <-chan ParWalker {
 				walker <- ParWalker{
 					info,
 					absPath,
+					rpath,
 					nil,
 				}
 			})

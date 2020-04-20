@@ -3,10 +3,11 @@ package tools
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/liuyongshuai/goUtils"
 )
 
 type ListOptions struct {
@@ -78,54 +79,78 @@ func List(options *ListOptions) error {
 		}
 	}
 
-	err = filepath.Walk(pathName, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
+	for walker := range ParWalk(pathName, 1000) {
+		if walker.Err != nil {
+			fmt.Println(goUtils.Red(fmt.Sprintf("Acess to the file/directory %s error: %s\n", walker.AbsPath, walker.Err)))
+			continue
 		}
-		if !info.IsDir() {
+		if !walker.IsDir() {
 			if !isSort {
 				if showFileNum >= listOptions.Limit {
-					return breakWalkError
+					break
 				}
-				rpath, err := filepath.Rel(pathName, path)
-				if err != nil {
-					return err
-				}
-				fmt.Printf("%s  %s  %10s  %s\n", info.Mode(), info.ModTime().Format("2006-01-02 15:04:05"), transSize(info.Size()), rpath)
+
+				fmt.Printf("%s  %s  %10s  %s\n", walker.Mode(), walker.ModTime().Format("2006-01-02 15:04:05"), transSize(walker.Size()), walker.RelPath)
 				showFileNum++
 			} else {
-				absPath, err := filepath.Abs(path)
-				if err != nil {
-					return err
-				}
 				listIndex = append(listIndex, ExtFileInfo{
-					FileInfo:     info,
-					AbsPath:      absPath,
-					RelativePath: path,
+					FileInfo:     walker.FileInfo,
+					RelativePath: walker.RelPath,
 					// BasePath:     path,
 				},
 				)
+				if fileNum > listOptions.Limit {
+					sort.Sort(listIndex)
+					listIndex = listIndex[:listOptions.Limit]
+				}
+
 			}
 			fileNum++
 		}
-		return nil
-	})
-	if err == breakWalkError {
-		return nil
-	}
-	if err != nil {
-		return err
 	}
 
+	// err = filepath.Walk(pathName, func(path string, info os.FileInfo, err error) error {
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	if !info.IsDir() {
+	// 		if !isSort {
+	// 			if showFileNum >= listOptions.Limit {
+	// 				return breakWalkError
+	// 			}
+	// 			rpath, err := filepath.Rel(pathName, path)
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 			fmt.Printf("%s  %s  %10s  %s\n", info.Mode(), info.ModTime().Format("2006-01-02 15:04:05"), transSize(info.Size()), rpath)
+	// 			showFileNum++
+	// 		} else {
+	// 			absPath, err := filepath.Abs(path)
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 			listIndex = append(listIndex, ExtFileInfo{
+	// 				FileInfo:     info,
+	// 				AbsPath:      absPath,
+	// 				RelativePath: path,
+	// 				// BasePath:     path,
+	// 			},
+	// 			)
+	// 		}
+	// 		fileNum++
+	// 	}
+	// 	return nil
+	// })
+	// if err == breakWalkError {
+	// 	return nil
+	// }
+	// if err != nil {
+	// 	return err
+	// }
+
 	if isSort {
-		if fileNum != len(listIndex) {
-			return fmt.Errorf("There is a error that the fileNum is wrong")
-		}
-		if fileNum < listOptions.Limit {
-			listOptions.Limit = fileNum
-		}
 		sort.Sort(listIndex)
-		for _, oS := range listIndex[:listOptions.Limit] {
+		for _, oS := range listIndex {
 			fmt.Printf("%s  %s  %10s  %s\n", oS.Mode(), oS.ModTime().Format("2006-01-02 15:04:05"), transSize(oS.Size()), oS.RelativePath)
 		}
 	}
