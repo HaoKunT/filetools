@@ -15,9 +15,14 @@ func TestParWalker(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	rpath, err := filepath.Rel("../", "../")
+	if err != nil {
+		t.Error(err)
+	}
 	walk := ParWalker{
 		info,
 		absPath,
+		rpath,
 		err,
 	}
 	t.Logf("Path: %s\n", walk.AbsPath)
