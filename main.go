@@ -256,6 +256,55 @@ func main() {
 				return nil
 			},
 		},
+		{
+			Name:     "server",
+			Category: gettext.Gettext("General"),
+			Usage:    gettext.Gettext("Using a Simple HTTP Server to download or upload files"),
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:     "directory, d",
+					Usage:    gettext.Gettext("the directory to be served"),
+					Required: true,
+				},
+				cli.StringFlag{
+					Name:  "host",
+					Usage: gettext.Gettext("The host you want to use"),
+					Value: "0.0.0.0",
+				},
+				cli.IntFlag{
+					Name:  "port, p",
+					Usage: gettext.Gettext("The port"),
+					Value: 9000,
+				},
+				cli.StringFlag{
+					Name:  "prefix",
+					Usage: gettext.Gettext("the prefix of the url"),
+					Value: "/files",
+				},
+				cli.StringFlag{
+					Name:  "user, u",
+					Usage: gettext.Gettext("The username of the server"),
+				},
+				cli.StringFlag{
+					Name:  "password, pw",
+					Usage: gettext.Gettext("The password of the server, if you not specify a password and username, The server will not use basic authentication"),
+				},
+			},
+			Action: func(c *cli.Context) error {
+				options := tools.ServerOptions{
+					Host:     c.String("host"),
+					Port:     c.Int("port"),
+					RootPath: c.String("directory"),
+					Prefix:   c.String("prefix"),
+					User:     c.String("user"),
+					Password: c.String("password"),
+				}
+				if err := tools.Server(&options); err != nil {
+					return cli.NewExitError(fmt.Errorf("Error Server: %s", err), -1)
+				}
+				return nil
+			},
+		},
 	}
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))

@@ -15,7 +15,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/panjf2000/ants/v2 v2.3.1
 	github.com/urfave/cli v1.21.0
-	golang.org/x/crypto v0.0.0-20190907121410-71b5226ff739 // indirect
+	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550 // indirect
 	google.golang.org/appengine v1.6.2 // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.28
 )
