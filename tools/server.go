@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/chai2010/gettext-go/gettext"
+	"github.com/chai2010/gettext-go"
 	"github.com/liuyongshuai/goUtils"
 )
 
@@ -37,7 +37,7 @@ var htmlStructure = HTMLStructure{
 	UploadUrl:            uploadPrefix,
 	UploadFileButtonName: gettext.Gettext("Submit"),
 	IndexUploadName:      gettext.Gettext("Upload file"),
-	IndexListFileName:    gettext.Gettext("View Files"),
+	IndexListFileName:    gettext.Gettext("View files"),
 }
 
 var uploadPrefix = "/upload"

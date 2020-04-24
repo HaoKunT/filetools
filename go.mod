@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/Re-volution/sizestruct v0.0.0-20190319075800-3818643ce02e
 	github.com/cespare/xxhash v1.1.0 // indirect
-	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1
+	github.com/chai2010/gettext-go v1.0.2
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
 	github.com/h2non/filetype v1.0.12

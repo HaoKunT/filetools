@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/chai2010/gettext-go/gettext"
+	gettext "github.com/chai2010/gettext-go"
 	"github.com/haokunt/filetools/tools"
 	"github.com/urfave/cli"
 )
@@ -18,8 +18,8 @@ var version = "MISSING build version [git hash]"
 
 func main() {
 	localZipBytes := MustAsset("local.zip")
-	gettext.BindTextdomain("filetools", "local.zip", localZipBytes)
-	gettext.Textdomain("filetools")
+	gettext.BindLocale(gettext.New("filetools", "local.zip", localZipBytes))
+	gettext.SetDomain("filetools")
 	pwd, err := os.Getwd()
 	if err != nil {
 		fmt.Println(err)
@@ -290,7 +290,7 @@ func main() {
 				},
 				cli.StringFlag{
 					Name:  "upload-dir, o",
-					Usage: gettext.Gettext("output directory, default is the same as root directory"),
+					Usage: gettext.Gettext("upload directory, default is the same as root directory"),
 				},
 			},
 			Action: func(c *cli.Context) error {
