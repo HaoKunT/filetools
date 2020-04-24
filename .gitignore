@@ -14,3 +14,7 @@
 
 # Release
 release/
+
+# IDE
+.idea/
+.vscode/

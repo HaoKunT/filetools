@@ -1,102 +1,114 @@
 msgid ""
 msgstr ""
 
-msgctxt "main.main"
 msgid "Hello World!"
 msgstr "你好，世界！"
 
-msgctxt "main.main"
 msgid "some tools about file"
 msgstr "一些和文件有关的工具"
 
-msgctxt "main.main"
 msgid "General"
 msgstr "通用"
 
-msgctxt "main.main"
 msgid "compare two files or directory"
 msgstr "比较两个文件（或文件夹）"
 
-msgctxt "main.main"
 msgid "source `file`"
 msgstr "源文件"
 
-msgctxt "main.main"
 msgid "destination `file`"
 msgstr "目标文件"
 
-msgctxt "main.main"
 msgid "whether compare content or not"
 msgstr "是否比较内容"
 
-msgctxt "main.main"
 msgid "print verbose output"
 msgstr "打印详细"
 
-msgctxt "main.main"
 msgid "Show file information"
 msgstr "文件详情"
 
-msgctxt "main.main"
 msgid "the `filename`"
 msgstr "文件名"
 
-msgctxt "main.main"
 msgid "use crypto to calculate the md5, sha1 and, sha256, this flag only works when the file is not directory"
 msgstr "使用crypto包计算文件md5，sh1，sha256， 仅在不是文件夹情况下生效"
 
-msgctxt "main.main"
 msgid "copy a file or directory"
 msgstr "复制文件（或文件夹）"
 
-msgctxt "main.main"
 msgid "Recursive copy"
 msgstr "递归复制"
 
-msgctxt "main.main"
 msgid "Create dst directory if it doesn't exist"
 msgstr "如果目标文件夹不存在，创建它"
 
-msgctxt "main.main"
 msgid "Whether show progress bar, if true, it will calculate the size of directory, it can only be used with no verbose flag"
 msgstr "是否显示进度条，如果为真，则会计算文件夹大小，只在verbose为假时生效"
 
-msgctxt "main.main"
 msgid "Rename a file"
 msgstr "重命名文件"
 
-msgctxt "main.main"
 msgid "keep original file"
 msgstr "保持源文件"
 
-msgctxt "main.main"
 msgid "list all files in a directory"
 msgstr "列出一个目录下的所有文件"
 
-msgctxt "main.main"
 msgid "sort the files by some fields, now supported: name, size, you can use it like this, --sortby name:desc --sortby size:asc, desc means descending, asc means ascending, desc and asc can be write in short name 'a' and 'd'.the sort field appears first will be the main field, and so on. if sort, the command will calculate first, so the performance will be slower."
 msgstr "通过一些字段排序，现在支持name, size, 你可以像这样写， --sortby name:desc, --sortby size:asc, desc是指降序， asc是升序，可以简写为'a'和'd'，先出现的字段将作为主要字段排序，如果排序了，程序将先计算目录大小，性能会下降"
 
-msgctxt "main.main"
 msgid "limit the `number` of files to show"
 msgstr "限制显示的文件数量"
 
-msgctxt "main.main"
 msgid "the directory `path`"
 msgstr "目录的路径"
 
-msgctxt "main.main"
 msgid "delete a file or directory, it will move file to the ~/.filetools-trash default"
 msgstr "删除一个文件或目录，默认情况下会放至~/.filetools-trash目录下"
 
-msgctxt "main.main"
 msgid "the `file` or directory"
 msgstr "文件或目录"
 
-msgctxt "main.main"
 msgid "hard delete, it will delete the directory directly"
 msgstr "硬删除，将直接删除"
 
-msgctxt "main.main"
 msgid "move a file or directory, it works like `mv`"
 msgstr "移动文件或目录，和`mv`命令工作方式一样"
+
+msgid "Using a Simple HTTP Server to download or upload files"
+msgstr "简单的HTTP文件服务，用于下载上传文件"
+
+msgid "the directory to be served"
+msgstr "根目录"
+
+msgid "the host you want to use"
+msgstr "主机名称"
+
+msgid "port"
+msgstr "端口"
+
+msgid "username of the server"
+msgstr "用户名"
+
+msgid "password of the server, if you not specify a password and username, The server will not use basic authentication"
+msgstr "密码，如果有用户名和密码则开启简单认证"
+
+msgid "upload directory, default is the same as root directory"
+msgstr "上传目录，默认和目录一样"
+
+msgid "filetools simple http file server"
+msgstr "filetools的简单HTTP文件服务"
+
+msgid "Submit"
+msgstr "提交"
+
+msgid "Upload file"
+msgstr "上传文件"
+
+msgid "View files"
+msgstr "浏览文件"
+
+msgid "back to home page"
+msgstr "回到主页"
+

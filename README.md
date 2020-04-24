@@ -41,3 +41,8 @@ if you want to make your local file, please follow the steps below
 
 ## todo
 More command and flag will be add in the future
+
+- [ ] add file compression and unzip.
+- [ ] add file download.
+- [ ] add file found.
+- [ ] add regex match.

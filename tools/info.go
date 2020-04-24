@@ -23,20 +23,40 @@ var infoOptions *InfoOptions
 func Info(options *InfoOptions) error {
 	infoOptions = options
 
-	info, err := NewExtInfo(infoOptions.FileName)
+	info, err := os.Stat(infoOptions.FileName)
+	if err != nil {
+		return err
+	}
+
+	var allSize int64
+	var fileNum, dirNum int
+	for walker := range ParWalk(infoOptions.FileName, 1000) {
+		if walker.Err != nil {
+			return walker.Err
+		}
+		if walker.IsDir() {
+			dirNum++
+		} else {
+			fileNum++
+			allSize += walker.Size()
+		}
+	}
+
+	absPath, err := filepath.Abs(infoOptions.FileName)
 	if err != nil {
 		return err
 	}
 
 	fmt.Println("General:")
 	fmt.Printf("Name: %s\n", info.Name())
-	fmt.Printf("Absolute path: %s\n", info.AbsPath)
+	fmt.Printf("Absolute path: %s\n", absPath)
+	fmt.Printf("Base path: %s\n", filepath.Base(absPath))
 
 	if info.IsDir() {
 		fmt.Printf("Type: directory\n")
-		fmt.Printf("%d directories, %d files, %s (%d bytes)\n", info.DirNum, info.FileNum, transSize(info.RealSize), info.RealSize)
+		fmt.Printf("%d directories, %d files, %s (%d bytes)\n", dirNum, fileNum, transSize(allSize), allSize)
 	} else {
-		kind, err := filetype.MatchFile(info.AbsPath)
+		kind, err := filetype.MatchFile(absPath)
 		if err != nil {
 			return err
 		}
@@ -44,7 +64,7 @@ func Info(options *InfoOptions) error {
 		if kind != filetype.Unknown {
 			fmt.Printf("MIME-type: %s\n", kind.MIME.Value)
 		}
-		fmt.Printf("Size: %s (%d bytes)\n", transSize(info.RealSize), info.RealSize)
+		fmt.Printf("Size: %s (%d bytes)\n", transSize(allSize), allSize)
 	}
 	fmt.Printf("Mode: %s\n", info.Mode())
 	fmt.Printf("ModTime: %s\n", info.ModTime())
@@ -55,27 +75,26 @@ func Info(options *InfoOptions) error {
 		fmt.Println()
 		fmt.Println("Crypto")
 		// md5
-		md5V, err := md5f(info.AbsPath)
+		md5V, err := md5f(absPath)
 		if err != nil {
 			return err
 		}
 		fmt.Printf("MD5: %s\n", md5V)
 
 		// sha1
-		sha1V, err := sha1f(info.AbsPath)
+		sha1V, err := sha1f(absPath)
 		if err != nil {
 			return err
 		}
 		fmt.Printf("SHA1: %s\n", sha1V)
 
 		// sha256
-		sha256V, err := sha256f(info.AbsPath)
+		sha256V, err := sha256f(absPath)
 		if err != nil {
 			return err
 		}
 		fmt.Printf("SHA256: %s\n", sha256V)
 	}
-
 	return nil
 }
 
