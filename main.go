@@ -20,6 +20,11 @@ func main() {
 	localZipBytes := MustAsset("local.zip")
 	gettext.BindTextdomain("filetools", "local.zip", localZipBytes)
 	gettext.Textdomain("filetools")
+	pwd, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	app := cli.NewApp()
 	app.Name = "filetools"
 	app.Usage = gettext.Gettext("some tools about file")
@@ -262,42 +267,44 @@ func main() {
 			Usage:    gettext.Gettext("Using a Simple HTTP Server to download or upload files"),
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name:     "directory, d",
-					Usage:    gettext.Gettext("the directory to be served"),
-					Required: true,
+					Name:  "directory, d",
+					Usage: gettext.Gettext("the directory to be served"),
+					Value: pwd,
 				},
 				cli.StringFlag{
 					Name:  "host",
-					Usage: gettext.Gettext("The host you want to use"),
-					Value: "0.0.0.0",
+					Usage: gettext.Gettext("the host you want to use"),
 				},
 				cli.IntFlag{
 					Name:  "port, p",
-					Usage: gettext.Gettext("The port"),
+					Usage: gettext.Gettext("port"),
 					Value: 9000,
 				},
 				cli.StringFlag{
-					Name:  "prefix",
-					Usage: gettext.Gettext("the prefix of the url"),
-					Value: "/files",
-				},
-				cli.StringFlag{
 					Name:  "user, u",
-					Usage: gettext.Gettext("The username of the server"),
+					Usage: gettext.Gettext("username of the server"),
 				},
 				cli.StringFlag{
 					Name:  "password, pw",
-					Usage: gettext.Gettext("The password of the server, if you not specify a password and username, The server will not use basic authentication"),
+					Usage: gettext.Gettext("password of the server, if you not specify a password and username, The server will not use basic authentication"),
+				},
+				cli.StringFlag{
+					Name:  "upload-dir, o",
+					Usage: gettext.Gettext("output directory, default is the same as root directory"),
 				},
 			},
 			Action: func(c *cli.Context) error {
+				var uploadDir = c.String("upload-dir")
+				if uploadDir == "" {
+					uploadDir = c.String("directory")
+				}
 				options := tools.ServerOptions{
-					Host:     c.String("host"),
-					Port:     c.Int("port"),
-					RootPath: c.String("directory"),
-					Prefix:   c.String("prefix"),
-					User:     c.String("user"),
-					Password: c.String("password"),
+					Host:      c.String("host"),
+					Port:      c.Int("port"),
+					RootPath:  c.String("directory"),
+					UploadDir: uploadDir,
+					User:      c.String("user"),
+					Password:  c.String("password"),
 				}
 				if err := tools.Server(&options); err != nil {
 					return cli.NewExitError(fmt.Errorf("Error Server: %s", err), -1)
@@ -308,7 +315,7 @@ func main() {
 	}
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))
-	err := app.Run(os.Args)
+	err = app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
