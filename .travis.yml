@@ -22,11 +22,10 @@ notifications:
     on_success: always
 deploy:
   provider: releases
-  token:
-    secure: $GH_TOKEN
+  api-key: $GH_TOKEN
   file_glob: true
   file: "*.tar.gz"
-  cleanup: true
+  skip_cleanup: true
   on:
     tags: true
     condition: $TRAVIS_GO_VERSION =~ ^1\.14
