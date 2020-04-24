@@ -22,7 +22,7 @@ notifications:
     on_success: always
 deploy:
   provider: releases
-  api-key: $GH_TOKEN
+  token: $GH_TOKEN
   file_glob: true
   file: "*.tar.gz"
   skip_cleanup: true
