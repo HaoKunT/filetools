@@ -32,13 +32,7 @@ type HTMLStructure struct {
 	IndexListFileName    string
 }
 
-var htmlStructure = HTMLStructure{
-	Title:                gettext.Gettext("filetools simple http file server"),
-	UploadUrl:            uploadPrefix,
-	UploadFileButtonName: gettext.Gettext("Submit"),
-	IndexUploadName:      gettext.Gettext("Upload file"),
-	IndexListFileName:    gettext.Gettext("View files"),
-}
+var htmlStructure HTMLStructure
 
 var uploadPrefix = "/upload"
 
@@ -84,6 +78,19 @@ func (h hs) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	fmt.Printf("%s %s %s %s\n", goUtils.Yellow(r.Method), goUtils.Green(r.URL.String()), r.Proto, r.RemoteAddr)
+}
+
+func init() {
+	localZipBytes := MustAsset("local.zip")
+	gettext.BindLocale(gettext.New("filetools", "local.zip", localZipBytes))
+	gettext.SetDomain("filetools")
+	htmlStructure = HTMLStructure{
+		Title:                gettext.Gettext("filetools simple http file server"),
+		UploadUrl:            uploadPrefix,
+		UploadFileButtonName: gettext.Gettext("Submit"),
+		IndexUploadName:      gettext.Gettext("Upload file"),
+		IndexListFileName:    gettext.Gettext("View files"),
+	}
 }
 
 func checkAuth(w http.ResponseWriter, r *http.Request) {

@@ -17,9 +17,6 @@ import (
 var version = "MISSING build version [git hash]"
 
 func main() {
-	localZipBytes := MustAsset("local.zip")
-	gettext.BindLocale(gettext.New("filetools", "local.zip", localZipBytes))
-	gettext.SetDomain("filetools")
 	pwd, err := os.Getwd()
 	if err != nil {
 		fmt.Println(err)
