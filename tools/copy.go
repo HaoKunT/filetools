@@ -19,7 +19,6 @@ type CopyOptions struct {
 	Dst         string
 	IsDir       bool
 	CreateDir   bool
-	Verbose     bool
 	ProgressBar bool
 }
 
@@ -44,7 +43,7 @@ func Copy(options *CopyOptions) error {
 	// if the directoy
 	if info.IsDir() {
 		dirCopy = true
-		if copyOptions.Verbose && copyOptions.ProgressBar {
+		if IsVerbose && copyOptions.ProgressBar {
 			return errors.New("The verbose flag can't be used with progress bar")
 		}
 		dstInfo, err := os.Stat(options.Dst)
@@ -189,7 +188,7 @@ func copyDir(srcDir *ExtFileInfo, dstDir string) (int64, error) {
 					errC <- err
 				}
 				atomic.AddInt64(&allsize, n)
-				if copyOptions.Verbose {
+				if IsVerbose {
 					fmt.Printf("%s -> %s : %s\n", i.AbsPath, newPath, transSize(n))
 				}
 				if copyOptions.ProgressBar {
@@ -199,40 +198,6 @@ func copyDir(srcDir *ExtFileInfo, dstDir string) (int64, error) {
 		}
 	}
 
-	// err = filepath.Walk(srcDir.AbsPath, func(path string, info os.FileInfo, err error) error {
-	// 	if err != nil {
-	// 		errC <- err
-	// 		return err
-	// 	}
-	// 	if path == srcDir.AbsPath {
-	// 		return nil
-	// 	}
-	// 	dstNewPath := strings.Replace(path, srcDir.AbsPath, dstDir, -1)
-
-	// 	if info.IsDir() {
-	// 		if err := MakeDir(dstNewPath, info.Mode()); err != nil {
-	// 			errC <- err
-	// 			return err
-	// 		}
-	// 	} else {
-	// 		wg.Add(1)
-	// 		go func() {
-	// 			defer wg.Done()
-	// 			n, err := copyFile(path, dstNewPath)
-	// 			if err != nil {
-	// 				errC <- err
-	// 			}
-	// 			allsize = atomic.AddInt64(&allsize, n)
-	// 			if copyOptions.Verbose {
-	// 				fmt.Printf("%s -> %s : %s\n", path, dstNewPath, transSize(n))
-	// 			}
-	// 			if copyOptions.ProgressBar {
-	// 				pgbNum.Increment()
-	// 			}
-	// 		}()
-	// 	}
-	// 	return nil
-	// })
 	wg.Wait()
 	close(errC)
 	if copyOptions.ProgressBar {

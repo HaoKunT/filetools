@@ -3,11 +3,14 @@ package tools
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"os/user"
 	"runtime"
 	"strings"
+
+	"github.com/liuyongshuai/goUtils"
 )
 
 type status int
@@ -21,6 +24,8 @@ const parNum = 10
 
 var Concurrency chan struct{}
 var breakWalkError = errors.New("break walk")
+
+var IsVerbose bool
 
 // Home returns the home directory for the executing user.
 //
@@ -76,4 +81,10 @@ func homeWindows() (string, error) {
 	}
 
 	return home, nil
+}
+
+func verbose(format string, args ...interface{}) {
+	if IsVerbose {
+		fmt.Println(goUtils.Yellow(fmt.Sprintf(format, args...)))
+	}
 }

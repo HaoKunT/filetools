@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"time"
 
 	gettext "github.com/chai2010/gettext-go"
 	"github.com/haokunt/filetools/tools"
@@ -26,6 +27,19 @@ func main() {
 	app.Name = "filetools"
 	app.Usage = gettext.Gettext("some tools about file")
 	app.Version = fmt.Sprintf("Git:[%s] (%s)", strings.ToUpper(version), runtime.Version())
+	app.Authors = []cli.Author{
+		cli.Author{
+			Name:  "haokunt",
+			Email: "haokunt@whu.edu.cn",
+		},
+	}
+	app.Flags = []cli.Flag{
+		cli.BoolFlag{
+			Name:        "verbose",
+			Usage:       gettext.Gettext("print verbose information"),
+			Destination: &tools.IsVerbose,
+		},
+	}
 	app.Commands = []cli.Command{
 		{
 			Name:     "compare",
@@ -46,17 +60,12 @@ func main() {
 					Name:  "content, c",
 					Usage: gettext.Gettext("whether compare content or not"),
 				},
-				cli.BoolFlag{
-					Name:  "verbose, v",
-					Usage: gettext.Gettext("print verbose output"),
-				},
 			},
 			Action: func(c *cli.Context) error {
 				Options := tools.CompareOptions{
 					Src:     c.String("src"),
 					Dst:     c.String("dst"),
 					Content: c.Bool("content"),
-					Verbose: c.Bool("verbose"),
 				}
 				if err := tools.Compare(&Options); err != nil {
 					return cli.NewExitError(fmt.Errorf("Error Compare: %s", err), -1)
@@ -114,10 +123,6 @@ func main() {
 					Usage: gettext.Gettext("Create dst directory if it doesn't exist"),
 				},
 				cli.BoolFlag{
-					Name:  "verbose, v",
-					Usage: gettext.Gettext("print verbose output"),
-				},
-				cli.BoolFlag{
 					Name:  "pbar, pb",
 					Usage: gettext.Gettext("Whether show progress bar, if true, it will calculate the size of directory, it can only be used with no verbose flag"),
 				},
@@ -128,7 +133,6 @@ func main() {
 					Dst:         c.String("dst"),
 					IsDir:       c.Bool("recursive"),
 					CreateDir:   c.Bool("createDir"),
-					Verbose:     c.Bool("verbose"),
 					ProgressBar: c.Bool("pbar"),
 				}
 				if err := tools.Copy(&Options); err != nil {
@@ -305,6 +309,38 @@ func main() {
 				}
 				if err := tools.Server(&options); err != nil {
 					return cli.NewExitError(fmt.Errorf("Error Server: %s", err), -1)
+				}
+				return nil
+			},
+		},
+		{
+			Name:     "download",
+			Category: gettext.Gettext("General"),
+			Usage:    gettext.Gettext("Download file from Internet"),
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:     "url, u",
+					Usage:    gettext.Gettext("URL"),
+					Required: true,
+				},
+				cli.StringFlag{
+					Name:  "output, o",
+					Usage: gettext.Gettext("output file name"),
+				},
+				cli.DurationFlag{
+					Name:  "timeout, t",
+					Usage: gettext.Gettext("connect timeout"),
+					Value: 5 * time.Second,
+				},
+			},
+			Action: func(c *cli.Context) error {
+				options := tools.WgetOptions{
+					Url:        c.String("url"),
+					OutputName: c.String("output"),
+					Timeout:    c.Duration("timeout"),
+				}
+				if err := tools.Download(&options); err != nil {
+					return cli.NewExitError(fmt.Errorf("Error downloading: %s", err), -1)
 				}
 				return nil
 			},

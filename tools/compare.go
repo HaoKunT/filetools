@@ -14,7 +14,6 @@ type CompareOptions struct {
 	Src     string
 	Dst     string
 	Content bool
-	Verbose bool
 }
 
 var compareOptions *CompareOptions
@@ -128,20 +127,20 @@ func Compare(Options *CompareOptions) error {
 		}
 		rpath, _ := filepath.Rel(compareOptions.Dst, path)
 		if srcinfo, ok := srcIndex[rpath]; !ok {
-			if compareOptions.Verbose {
+			if IsVerbose {
 				fmt.Printf(goUtils.Green("new file: %q\n"), rpath)
 			}
 			newFileNum++
 		} else if !compareOptions.Content {
 			if srcinfo.Size() != info.Size() {
-				if compareOptions.Verbose {
+				if IsVerbose {
 					fmt.Printf(goUtils.Yellow("modified file: %q\n"), rpath)
 				}
 				modifyFileNum++
 			}
 		} else {
 			if !comparefile(filepath.Join(compareOptions.Src, rpath), filepath.Join(compareOptions.Dst, rpath)) {
-				if compareOptions.Verbose {
+				if IsVerbose {
 					fmt.Printf(goUtils.Yellow("modified file: %q\n"), rpath)
 				}
 				modifyFileNum++
@@ -155,7 +154,7 @@ func Compare(Options *CompareOptions) error {
 		return err
 	}
 	for rpath := range srcIndex {
-		if compareOptions.Verbose {
+		if IsVerbose {
 			fmt.Printf(goUtils.Red("delete file: %q\n"), rpath)
 		}
 		deleteFileNum++
