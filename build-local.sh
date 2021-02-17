@@ -6,4 +6,3 @@ do
     msgfmt --statistics -v -o $mofile $pofile
 done
 zip -q -r local.zip  ./local
-go-bindata -o=tools/local_pack.go -pkg=tools local.zip

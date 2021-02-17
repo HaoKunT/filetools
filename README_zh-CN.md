@@ -32,14 +32,15 @@
 - `move`: 移动文件或目录，我希望能像`mv`命令一样，但是我还是不满意，大家使用的时候小心一点。当然一些正常情况是没问题的，主要是一些极端的情况没有测试过（其实也测试过就是和`mv`命令的报错不太一样），如果找到了bug，请务必告诉我
 
 ## 国际化帮助
-filetools工具现已使用`github.com/chai2010/gettext-go`支持gettext，翻译文件在`local.zip`，使用`github.com/go-bindata/go-bindata`将翻译文件打包进二进制文件，`local_pack.go`文件是由`go-bindata`自动生成的，请不要编辑。
+filetools工具现已使用`github.com/chai2010/gettext-go`支持gettext，翻译文件在`local.zip`，使用Golang1.16版本引入的`embed`将翻译文件打包进二进制文件，因此Golang版本必须更新到1.16
 
 如果你想制作你自己的本地化文件，请按以下步骤操作
 1. 编辑本地文件，例如`local/zh_CN/LC_MESSAGES/filetools.po`
-2. 使用`msg -o local/zh_CN/LC_MESSAGES/filetools.mo local/zh_CN/LC_MESSAGES/filetools.po`命令构建MO文件
+2. 使用`msgfmt -o local/zh_CN/LC_MESSAGES/filetools.mo local/zh_CN/LC_MESSAGES/filetools.po`命令构建MO文件
 3. 压缩`local`文件夹到`local.zip`文件夹
-4. 使用`go-bindata -o=local_pack.go -pkg=main local.zip`命令生成go文件。（你需要先安装go-bindata）
-5. 构建二进制文件
+4. 构建二进制文件
+
+其中`2,3`步骤可直接运行`build-local.sh`脚本（Windows平台需要有`zip`，`msgfmt`命令和Bash环境）
 
 ## todo
 未来将会增加更多的子命令和参数项
