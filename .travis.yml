@@ -1,8 +1,6 @@
 language: go
 go:
-  - 1.12.x
-  - 1.13.x
-  - 1.14.x
+  - 1.16.x
   - master
 before_install:
   - GO111MODULE=off go get -u github.com/go-bindata/go-bindata/...
@@ -28,4 +26,4 @@ deploy:
   skip_cleanup: true
   on:
     tags: true
-    condition: $TRAVIS_GO_VERSION =~ ^1\.14
+    condition: $TRAVIS_GO_VERSION =~ ^1\.16
