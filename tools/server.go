@@ -176,7 +176,9 @@ func Server(options *ServerOptions) error {
 
 	fmt.Printf("The file server is running at %s, root path is %s\nThe username is %s\nThe password is %s\n...\n", addr, serverOptions.RootPath, serverOptions.User, serverOptions.Password)
 
-	http.ListenAndServe(addr, nil)
+	if err := http.ListenAndServe(addr, nil); err != nil {
+		return err
+	}
 	return nil
 }
 
