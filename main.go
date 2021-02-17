@@ -12,9 +12,14 @@ import (
 	gettext "github.com/chai2010/gettext-go"
 	"github.com/haokunt/filetools/tools"
 	"github.com/urfave/cli"
+
+	_ "embed"
 )
 
 var version = "MISSING build version [git hash]"
+
+//go:embed local.zip
+var localZipBytes []byte
 
 func main() {
 	pwd, err := os.Getwd()
@@ -22,6 +27,10 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+
+	gettext.BindLocale(gettext.New("filetools", "local.zip", localZipBytes))
+	gettext.SetDomain("filetools")
+
 	app := cli.NewApp()
 	app.Name = "filetools"
 	app.Usage = gettext.Gettext("some tools about file")

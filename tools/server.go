@@ -81,9 +81,7 @@ func (h hs) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func init() {
-	localZipBytes := MustAsset("local.zip")
-	gettext.BindLocale(gettext.New("filetools", "local.zip", localZipBytes))
-	gettext.SetDomain("filetools")
+
 	htmlStructure = HTMLStructure{
 		Title:                gettext.Gettext("filetools simple http file server"),
 		UploadUrl:            uploadPrefix,
