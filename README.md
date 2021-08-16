@@ -46,3 +46,4 @@ More command and flag will be add in the future
 - [ ] add file download.
 - [ ] add file found.
 - [ ] add regex match.
+- [x] add parallel nums in copy

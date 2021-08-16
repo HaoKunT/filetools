@@ -48,3 +48,4 @@ filetools工具现已使用`github.com/chai2010/gettext-go`支持gettext，翻�
 - [ ] 增加文件下载的功能(wget)
 - [ ] 增加查找文件的功能
 - [ ] 增加正则表达式匹配的功能
+- [x] 给copy加一个自定义的并发数量

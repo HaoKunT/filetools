@@ -15,12 +15,13 @@ import (
 )
 
 type CopyOptions struct {
-	Src         string
-	Dst         string
-	IsDir       bool
-	CreateDir   bool
-	Verbose     bool
-	ProgressBar bool
+	Src          string
+	Dst          string
+	IsDir        bool
+	CreateDir    bool
+	Verbose      bool
+	ProgressBar  bool
+	ParallelNums int
 }
 
 var copyOptions *CopyOptions
@@ -63,8 +64,9 @@ func Copy(options *CopyOptions) error {
 			return fmt.Errorf("Source and destination are the same")
 		}
 
+		// TODO: /home/xxx/filetools and /home/xxx/filetools-copy
 		if strings.HasPrefix(dstAbs, info.AbsPath) {
-			return fmt.Errorf("%s is sub-directory of source %s", dstDir, info.Name())
+			return fmt.Errorf("%s is sub-directory of source %s", dstAbs, info.AbsPath)
 		}
 		if !IsExisted(dstAbs) && !copyOptions.CreateDir {
 			return fmt.Errorf("%s: No such file or directory", dstAbs)
@@ -166,7 +168,7 @@ func copyDir(srcDir *ExtFileInfo, dstDir string) (int64, error) {
 		}
 	}()
 
-	for info := range srcDir.TraversalChan(20) {
+	for info := range srcDir.TraversalChan(copyOptions.ParallelNums) {
 		if info.AbsPath == srcDir.AbsPath {
 			continue
 		}

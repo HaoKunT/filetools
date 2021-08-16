@@ -121,15 +121,20 @@ func main() {
 					Name:  "pbar, pb",
 					Usage: gettext.Gettext("Whether show progress bar, if true, it will calculate the size of directory, it can only be used with no verbose flag"),
 				},
+				cli.IntFlag{
+					Name:  "pnums, pn",
+					Usage: gettext.Gettext("parallel nums"),
+				},
 			},
 			Action: func(c *cli.Context) error {
 				Options := tools.CopyOptions{
-					Src:         c.String("src"),
-					Dst:         c.String("dst"),
-					IsDir:       c.Bool("recursive"),
-					CreateDir:   c.Bool("createDir"),
-					Verbose:     c.Bool("verbose"),
-					ProgressBar: c.Bool("pbar"),
+					Src:          c.String("src"),
+					Dst:          c.String("dst"),
+					IsDir:        c.Bool("recursive"),
+					CreateDir:    c.Bool("createDir"),
+					Verbose:      c.Bool("verbose"),
+					ProgressBar:  c.Bool("pbar"),
+					ParallelNums: c.Int("pnums"),
 				}
 				if err := tools.Copy(&Options); err != nil {
 					return cli.NewExitError(fmt.Errorf("Error Copy: %s", err), -1)
